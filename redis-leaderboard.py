@@ -3,7 +3,6 @@ import redis
 
 """
 A primitive interactive leaderboard designed in Python leveraging Redis
-Author: Aman Garg
 """
 r = redis.StrictRedis(host='localhost', port=6379, db=0,
                       charset="utf-8", decode_responses=True)
@@ -28,18 +27,24 @@ class User:
 
 def displayLeaderBoard(users):
     """Modelling a basic leaderboard with fields such as name, email, country and score"""
-    print('*'*55)
+    if len(users) == 0:
+        prettyPrint('No records found')
+        return
+    print('*'*75)
+    print('%3r | %15r | %10r | %12r | %10r' %
+          ('RANK', 'EMAIL', 'NAME', 'COUNTRY', 'SCORE'))
+    print('*'*75)
     for index, user in enumerate(users):
-        print('%3r %10r | %10r | %10r | %10r' %
+        print('%3r | %20r | %10r | %10r | %10r' %
               (index + 1, user.email, user.name, user.country, user.score))
-    print('*'*55)
+    print('*'*75)
 
 
 def prettyPrint(string):
     """Pretty print a simple string"""
-    print('*'*55)
+    print('*'*75)
     print(string)
-    print('*'*55)
+    print('*'*75)
 
 
 COMMAND_LIST = {
@@ -146,7 +151,7 @@ def addUser(name, country, email, score=0, display=True):
     hashKey = keyUserPrefix + email
     country = country.capitalize()
     if r.exists(hashKey):
-        print('User ' + email + ' is already present. ')
+        prettyPrint('User ' + email + ' is already present. ')
     else:
         mapping = {
             'name': name,
@@ -154,8 +159,9 @@ def addUser(name, country, email, score=0, display=True):
         }
         r.hmset(hashKey, mapping)
         upsertScore(email, score, country=country, display=False)
-        print('User ' + email + ' added to leaderboard with a score of %s. ' % (score))
-    createLeaderboard(leaders=None, display=display)
+        prettyPrint('User ' + email +
+                    ' added to leaderboard with a score of %s. ' % (score))
+        createLeaderboard(leaders=None, display=display)
 
 
 def search(name=None, score=None, country=None):
@@ -185,7 +191,7 @@ def search(name=None, score=None, country=None):
                     keyUserPrefix + x[0], 'name') == name, leaders)
         createLeaderboard(leaders=leaders)
     except:
-        print('**SEARCH Usage: SEARCH [NAME] [SCORE] [COUNTRY]**')
+        prettyPrint('SEARCH Usage: SEARCH [NAME] [SCORE] [COUNTRY]')
 
 
 def upsertScore(email, score, country=None, display=True):
@@ -247,24 +253,26 @@ def removeUser(email):
         and purge their details """
     hashKey = keyUserPrefix + email
     if not r.exists(hashKey):
-        print('User ' + email + ' doesn\'t exists ')
+        prettyPrint('User ' + email + ' doesn\'t exists ')
     else:
         userDetail = r.hgetall(hashKey)
         _leaderBoardKey = keyLeaderboardCountryPrefix + userDetail['country']
         r.zrem(keyLeaderboard, email)
         r.zrem(_leaderBoardKey, email)
         r.delete(hashKey)
-        print('User %s removed successfully from the global and country leaderboards' % (email))
-    createLeaderboard()
+        prettyPrint(
+            'User %s removed successfully from the global and country leaderboards' % (email))
+        createLeaderboard()
 
 
 if __name__ == "__main__":
-    r.flushall()
+    # r.flushall()
     queryBuilder = QueryBuilder()
-    aUser = User('Aman', 'India', 'a.in', 20)
-    bUser = User('Saurbhi', 'India', 's.in', 15)
-    cUser = User('Zaid', 'Pak', 'z.pk', 11)
-    dUser = User('Nawaz', 'Pak', 'n.pk', 19)
+    aUser = User('Aman', 'India', 'aman@redis.in', 30.91)
+    cUser = User('Zaid', 'Pakistan', 'zaid@git.pk', 18.2)
+    dUser = User('Nawaz', 'Saudi Arab', 'n.pk', 51.0)
+    bUser = User('Saurbhi', 'India', 'sara@test.in', 37.10)
+    dUser = User('Dean', 'USA', 'dean@me.us', 49.1)
 
     addUser(aUser.name, aUser.country, aUser.email, aUser.score, display=False)
     addUser(bUser.name, bUser.country, bUser.email, bUser.score, display=False)
@@ -273,5 +281,5 @@ if __name__ == "__main__":
     createLeaderboard(display=True)
 
     while True:
-        userInput = [i for i in map(str.strip, input().split(' '))]
+        userInput = [i for i in map(str.strip, input().strip(' ').split(' '))]
         queryBuilder.parse(userInput)
