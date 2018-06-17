@@ -37,9 +37,11 @@ People are welcome to switch email to usernames.
     ```$ python redis-leaderboard.py```
 
    * The program shall run an event loop during which you are free to enter commands so as to modify the leaderboard.
+   * Few users have been upserted by default for user convenience.
    * Every command returns a pretty human readable message/current state of the leaderboard.
    * Program, by default refers to redis synchronously. Hence, changes made during one instance of program would 
      continue to persist. To avoid persistent, uncomment ```r.flushall()```
+![Default Setup](https://i.imgur.com/u5WU9oR.png)
 
 ### Command list ###
 ---
@@ -51,6 +53,9 @@ Throws an error if the user with the same email is being entered again.
 ```
   $ UPSERT_USER <NAME> <COUNTRY> <EMAIL>
 ```
+![Upsert User](https://i.imgur.com/eFTALBZ.png)
+---
+
 
 
 * #### UPSERT_SCORE ####
@@ -59,6 +64,7 @@ exists is throws an error. Upserting an existing score of *30* with *40* will si
 ```
   UPSERT_SCORE <NAME> <COUNTRY> <EMAIL>
 ```
+![Upsert Score](https://i.imgur.com/jUNIISB.png)
 ---
 
 * #### GET_TOP ####
@@ -68,12 +74,14 @@ Gets the top K users by rank. If rank is specified as 0, the topper is returned.
   GET_TOP <RANK> [COUNTRY]
 ```
 ---
+![Get top](https://i.imgur.com/2RABGwn.png)
   
 * #### GET_USERS_WITH_SCORE ####
 Gets all the users with the given score in the leaderboard.
 ```
   GET_USERS_WITH_SCORE <SCORE> 
 ```
+![Get users with score](https://i.imgur.com/BqAQW8j.png)
 ---
 
 * #### SEARCH ####
@@ -85,6 +93,7 @@ Performs a search on the current leaderboard. It takes in three optional params 
 ```
   SEARCH [NAME] [SCORE] [COUNTRY]
 ```
+![Search](https://i.imgur.com/G4eaUCs.png)
 ---
 
 
@@ -94,7 +103,7 @@ user is present it throws and error.
 ```
   REMOVE_USER <EMAIL>
 ```
-
-
+![Remove User](https://i.imgur.com/Hi3XIZ9.png)
+---
 
  
