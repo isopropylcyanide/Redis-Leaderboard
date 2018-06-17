@@ -190,16 +190,17 @@ def search(name=None, score=None, country=None):
 
 def upsertScore(email, score, country=None, display=True):
     """Upsert score in the entire leaderboard as well as the country leaderboard"""
-    r.zadd(keyLeaderboard, score, email)
-    if country is None:
-        hashKey = keyUserPrefix + email
-        country = r.hget(hashKey, 'country')
-    country = country.capitalize()
-    r.zadd(keyLeaderboardCountryPrefix + country, score, email)
-    createLeaderboard(display=display)
-
-
-4
+    hashKey = keyUserPrefix + email
+    if not r.exists(hashKey):
+        prettyPrint('User ' + email + ' doesn\'t exist.')
+    else:
+        r.zadd(keyLeaderboard, score, email)
+        if country is None:
+            hashKey = keyUserPrefix + email
+            country = r.hget(hashKey, 'country')
+        country = country.capitalize()
+        r.zadd(keyLeaderboardCountryPrefix + country, score, email)
+        createLeaderboard(display=display)
 
 
 def createLeaderboard(leaders=None, display=True):
@@ -258,7 +259,7 @@ def removeUser(email):
 
 
 if __name__ == "__main__":
-    # r.flushall()
+    r.flushall()
     queryBuilder = QueryBuilder()
     aUser = User('Aman', 'India', 'a.in', 20)
     bUser = User('Saurbhi', 'India', 's.in', 15)
